@@ -26,20 +26,18 @@ use App\Http\Controllers\ProductController;
 // Route::post('products', [ProductController::class, 'store']);
 
 
-Route::get('products/search/{name}', [ProductController::class, 'search']);
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
+// auth
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
+Route::post('/forgot-password', [AuthController::class, 'forgot'])->middleware('guest')->name('password.email');
+Route::post('/reset-password', [AuthController::class, 'reset'])->middleware('guest')->name('password.update');
+
 
 Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::resource('products', ProductController::class);
+    Route::get('products/search/{name}', [ProductController::class, 'search']);
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/user', [AuthController::class, 'user']);
 });
 
-Route::post('/forgot-password', [AuthController::class, 'forgot'])->middleware('guest')->name('password.email');
-
-Route::post('/reset-password', [AuthController::class, 'reset'])->middleware('guest')->name('password.update');
