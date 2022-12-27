@@ -6,20 +6,24 @@ use Throwable;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\StoreUserRequest;
-use App\Http\Requests\UpdatePasswordRequest;
-use App\Http\Requests\UpdateUserRequest;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
+use App\Http\Requests\UpdatePasswordRequest;
 
 class UserController extends Controller
 {
     public function list()
     {
+
+        Gate::authorize('view', 'users');
+
         $result['status'] = 200;
 
         try {
 
-            $users = User::latest()->paginate();
+            $users = User::with('role')->latest()->paginate();
             $result['data'] = $users;
 
         } catch (Throwable $e) {
@@ -33,6 +37,9 @@ class UserController extends Controller
 
     public function store(StoreUserRequest $request)
     {
+
+        Gate::authorize('edit', 'users');
+
         $result['status'] = 200;
         try {
 
@@ -40,9 +47,11 @@ class UserController extends Controller
             $user->name = $request->name;
             $user->email = $request->email;
             $user->password = bcrypt($request->password);
+            $user->role_id = $request->role_id;
             $user->save();
 
-            $result['data'] = $user;
+            $data = User::with('role')->findOrFail($user->id);
+            $result['data'] = $data;
             $result['message'] = "Created";
 
         } catch (Throwable $e) {
@@ -56,10 +65,13 @@ class UserController extends Controller
 
     public function show(Request $request)
     {
+
+        Gate::authorize('view', 'users');
+
         $result['status'] = 200;
 
         try {
-            $user = User::findOrFail($request->id);
+            $user = User::with('role')->findOrFail($request->id);
             $result['data'] = $user;
         } catch (Throwable $e) {
             $result['status'] = 201;
@@ -69,16 +81,22 @@ class UserController extends Controller
         return response()->json($result);
     }
 
-    public function update(UpdateUserRequest $request) {
+    public function update(UpdateUserRequest $request)
+    {
+
+        Gate::authorize('edit', 'users');
+
         $result['status'] = 200;
 
         try {
             $user = User::findOrFail($request->id);
             $user->name = $request->name;
             $user->email = $request->email;
+            $user->role_id = $request->role_id;
             $user->save();
 
-            $result['data'] = $user;
+            $data = User::with('role')->findOrFail($user->id);
+            $result['data'] = $data;
             $result['message'] = "Updated";
 
         } catch (Throwable $e) {
@@ -91,6 +109,9 @@ class UserController extends Controller
 
     public function delete(Request $request)
     {
+
+        Gate::authorize('edit', 'users');
+
         $result['status'] = 200;
 
         try {
@@ -113,7 +134,7 @@ class UserController extends Controller
         $result['status'] = 200;
 
         try {
-            $user = Auth::user();
+            $user = User::with('role')->findOrFail(Auth()->id());
             $result['data'] = $user;
         } catch (Throwable $e) {
             $result['status'] = 201;
@@ -128,7 +149,7 @@ class UserController extends Controller
         $result['status'] = 200;
 
         try {
-            $user = Auth::user();
+            $user = User::with('role')->findOrFail(Auth()->id());
             $user->name = $request->name;
             $user->email = $request->email;
             $user->save();
@@ -148,7 +169,7 @@ class UserController extends Controller
         $result['status'] = 200;
 
         try {
-            $user = Auth::user();
+            $user = User::with('role')->findOrFail(Auth()->id());
             if(!Hash::check($request->old_password, $user->password)) {
                 $result['status'] = 201;
                 $result['message'] = "The old were incorrect.";

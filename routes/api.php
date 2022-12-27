@@ -1,14 +1,10 @@
 <?php
 
-use App\Models\Product;
-use Illuminate\Support\Str;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Auth\Events\PasswordReset;
+use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 
 /*
@@ -39,6 +35,14 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     Route::post('users-show', [UserController::class, 'show']);
     Route::post('users-update', [UserController::class, 'update']);
     Route::post('users-delete', [UserController::class, 'delete']);
+
+    Route::post('roles-list', [RoleController::class, 'list']);
+    Route::post('roles-create', [RoleController::class, 'store']);
+    Route::post('roles-show', [RoleController::class, 'show']);
+    Route::post('roles-update', [RoleController::class, 'update']);
+    Route::post('roles-delete', [RoleController::class, 'delete']);
+
+    Route::post('permissions-list', [PermissionController::class, 'list']);
 
     Route::post('products-list', [ProductController::class, 'list']);
     Route::post('products-create', [ProductController::class, 'store']);

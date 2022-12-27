@@ -7,11 +7,14 @@ use App\Http\Requests\UpdateProductRequest;
 use Throwable;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class ProductController extends Controller
 {
     public function list()
     {
+
+        Gate::authorize('view', 'products');
 
         $result = ['status' => 200];
 
@@ -31,6 +34,9 @@ class ProductController extends Controller
 
     public function store(StoreProductRequest $request)
     {
+
+        Gate::authorize('edit', 'products');
+
         $result = ['status' => 200];
 
         try {
@@ -50,6 +56,9 @@ class ProductController extends Controller
 
     public function show(Request $request)
     {
+
+        Gate::authorize('view', 'products');
+
         $result = ['status' => 200];
 
         try {
@@ -68,6 +77,9 @@ class ProductController extends Controller
 
     public function update(UpdateProductRequest $request)
     {
+
+        Gate::authorize('edit', 'products');
+
         $result = ['status' => 200];
 
         try {
@@ -88,6 +100,9 @@ class ProductController extends Controller
 
     public function delete(Request $request)
     {
+
+        Gate::authorize('edit', 'products');
+
         $result = ['status' => 200];
 
         try {
