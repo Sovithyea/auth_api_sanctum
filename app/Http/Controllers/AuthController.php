@@ -2,77 +2,90 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ForgotRequest;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\ResetRequest;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
+use Throwable;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|confirmed|min:8'
-        ]);
 
-        $user = new User();
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->password = Hash::make($request->password);
-        $user->save();
-        $token = $user->createToken('myapptoken')->plainTextToken;
+        $result = ['status' => 200];
 
-        $response = [
-            'user' => $user,
-            'token' => $token,
-        ];
+        try {
 
-        return response()->json($response, 201);
-    }
+            $user = new User();
+            $user->name = $request->name;
+            $user->email = $request->email;
+            $user->password = Hash::make($request->password);
+            $user->save();
 
-    public function login(Request $request)
-    {
-        // dd($request->all());
-        $fields = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string|min:8'
-        ]);
-        // dd($fields);
-        $user = User::where('email', $fields['email'])->first();
-        // dd($user);
-        if(!$user || !Hash::check($fields['password'], $user->password))
-        {
-            return response()->json([
-                'message' => 'The user credentials were incorrect.'
-            ]);
+            $result['data'] = $user;
+            $result['message'] = "Registered";
+
+        } catch (Throwable $e) {
+            $result['status'] = 201;
+            $result['message'] = $e->getMessage();
         }
 
-        $token = $user->createToken('myapptoken')->plainTextToken;
+        return response()->json($result);
 
-        $response = [
-            'user' => $user,
-            'token' => $token,
-        ];
+    }
 
-        return response()->json($response, 201);
+    public function login(LoginRequest $request)
+    {
+
+        $result = ['status' => 200];
+
+        try {
+            $user = User::where('email', $request->email)->first();
+
+            if(!$user || !Hash::check($request->password, $user->password))
+            {
+                $result['status'] = 201;
+                $result['message'] = "The user credentials were incorrect.";
+            } else {
+                $token = $user->createToken('access_token')->plainTextToken;
+                $result['token'] = $token;
+                $result['data'] = $user;
+                $result['message'] = "Login";
+            }
+
+        } catch (Throwable $e) {
+            $result['status'] = 201;
+            $result['message'] = $e->getMessage();
+        }
+
+        return response()->json($result);
+
     }
 
     public function logout()
     {
-        auth()->user()->tokens()->delete();
 
-        return response()->json([
-            'message' => "Successfully logout"
-        ], 201);
+        $result = ['status' => 200];
+
+        try {
+            auth()->user()->tokens()->delete();
+            $result['message'] = "Logout";
+        } catch (Throwable $e) {
+            $result['status'] = 201;
+            $result['message'] = $e->getMessage();
+        }
+        return response()->json($result);
     }
 
-    public function forgot(Request $request)
+    public function forgot(ForgotRequest $request)
     {
-        $request->validate(['email' => 'required|email']);
 
         $status = Password::sendResetLink(
             $request->only('email')
@@ -90,14 +103,8 @@ class AuthController extends Controller
         ]);
     }
 
-    public function reset(Request $request)
+    public function reset(ResetRequest $request)
     {
-        $request->validate([
-            'token' => 'required',
-            'email' => 'required|email',
-            'password' => 'required|min:8|confirmed',
-        ]);
-
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user, $password) {
@@ -126,8 +133,15 @@ class AuthController extends Controller
 
     public function user()
     {
-        $user = auth()->user();
+        $result = ['status' => 200];
+        try {
+            $user = auth()->user();
+            $result['data'] = $user;
+        } catch (Throwable $e) {
+            $result['status'] = 201;
+            $result['message'] = $e->getMessage();
+        }
 
-        return response()->json($user);
+        return response()->json($result);
     }
 }

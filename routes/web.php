@@ -18,5 +18,5 @@ Route::get('/', function () {
 });
 
 Route::get('/reset-password/{token}', function ($token) {
-    return view('welcome');
+    return view('ForgotPassword');
 })->middleware('guest')->name('password.reset');
