@@ -4,13 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use Throwable;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Throwable;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function list()
     {
 
         $result = ['status' => 200];
@@ -31,7 +31,6 @@ class ProductController extends Controller
 
     public function store(StoreProductRequest $request)
     {
-
         $result = ['status' => 200];
 
         try {
@@ -47,17 +46,15 @@ class ProductController extends Controller
         }
 
         return response()->json($result);
-
     }
 
-    public function show($id)
+    public function show(Request $request)
     {
-
         $result = ['status' => 200];
 
         try {
 
-            $product = Product::find($id);
+            $product = Product::findOrFail($request->id);
 
             $result['data'] = $product;
 
@@ -67,37 +64,15 @@ class ProductController extends Controller
         }
 
         return response()->json($result);
-
     }
 
-    public function edit($id)
+    public function update(UpdateProductRequest $request)
     {
-
         $result = ['status' => 200];
 
         try {
 
-            $product = Product::find($id);
-
-            $result['data'] = $product;
-
-        } catch (Throwable $e) {
-            $result['status'] = 201;
-            $result['message'] = $e->getMessage();
-        }
-
-        return response()->json($result);
-
-    }
-
-    public function update($id, UpdateProductRequest $request)
-    {
-
-        $result = ['status' => 200];
-
-        try {
-
-            $product = Product::find($id);
+            $product = Product::findOrFail($request->id);
             $product->update($request->validated());
 
             $result['data'] = $product;
@@ -109,39 +84,17 @@ class ProductController extends Controller
         }
 
         return response()->json($result);
-
     }
 
-    public function destroy($id)
+    public function delete(Request $request)
     {
-
         $result = ['status' => 200];
 
         try {
 
-            Product::destroy($id);
-
+            $product = Product::findOrFail($request->id);
+            $product->delete();
             $result['message'] = "Deleted";
-
-        } catch (Throwable $e) {
-            $result['status'] = 201;
-            $result['message'] = $e->getMessage();
-        }
-
-        return response()->json($result);
-
-    }
-
-    public function search($name)
-    {
-
-        $result = ['status' => 200];
-
-        try {
-
-            $products = Product::where('name', 'like', '%'.$name.'%')->get();
-
-            $result['data'] = $products;
 
         } catch (Throwable $e) {
             $result['status'] = 201;

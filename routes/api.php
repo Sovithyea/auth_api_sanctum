@@ -9,6 +9,7 @@ use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,9 +30,27 @@ Route::post('/reset-password', [AuthController::class, 'reset'])->middleware('gu
 
 
 Route::group(['middleware' => ['auth:sanctum']], function() {
-    Route::resource('products', ProductController::class);
-    Route::get('products/search/{name}', [ProductController::class, 'search']);
+
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/user', [AuthController::class, 'user']);
+
+    //crud users
+    Route::post('users-list', [UserController::class, 'list']);
+    Route::post('users-create', [UserController::class, 'store']);
+    Route::post('users-show', [UserController::class, 'show']);
+    Route::post('users-update', [UserController::class, 'update']);
+    Route::post('users-delete', [UserController::class, 'delete']);
+
+    Route::post('products-list', [ProductController::class, 'list']);
+    Route::post('products-create', [ProductController::class, 'store']);
+    Route::post('products-show', [ProductController::class, 'show']);
+    Route::post('products-update', [ProductController::class, 'update']);
+    Route::post('products-delete', [ProductController::class, 'delete']);
+
+    //auth profile
+    Route::post('users', [UserController::class, 'user']);
+    Route::post('update-info', [UserController::class, 'updateInfo']);
+    Route::post('update-password', [UserController::class, 'updatePassword']);
+
+
 });
 

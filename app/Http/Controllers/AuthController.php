@@ -131,17 +131,4 @@ class AuthController extends Controller
 
     }
 
-    public function user()
-    {
-        $result = ['status' => 200];
-        try {
-            $user = auth()->user();
-            $result['data'] = $user;
-        } catch (Throwable $e) {
-            $result['status'] = 201;
-            $result['message'] = $e->getMessage();
-        }
-
-        return response()->json($result);
-    }
 }
